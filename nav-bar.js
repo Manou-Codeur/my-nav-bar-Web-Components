@@ -34,12 +34,39 @@ class myNavBar extends HTMLElement {
                     display: none;
                 }
 
+                .links-mobile {
+                    position: fixed;
+                    top: 0;
+                    left: -100%;
+                    background-color: whitesmoke;
+                    height: 100vh;
+                    width: 100%;
+                    display: none;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all .5s;
+                }
+
+                .links-mobile a {
+                    font-size: 20px;
+                    text-decoration: none;
+                    color: black;
+                    margin: 10px 0;
+                }
+
+                .close {
+                    position: absolute;
+                    top: 5%;
+                    right: 5%;
+                }
+
                 @media only screen and (max-width: 503px) {
                     .nav-desktop {
                         display: none;
                     }
                     
-                    .nav-mobile {
+                    .nav-mobile, .links-mobile {
                         display: flex;
                     }
                 }
@@ -49,7 +76,7 @@ class myNavBar extends HTMLElement {
             <div class="nav-desktop">
                 <img class='myLogo'>
                 <div class='links'>
-                    <slot></slot>
+                    <slot class="tstt"></slot>
                 </div>
             </div>
             
@@ -57,11 +84,11 @@ class myNavBar extends HTMLElement {
                 <img class='myLogo'>
                 <img class='menu-bars'>
             </div>
-            <div class='links'>
+            <div class='links-mobile'>
+                <img class='close'>
                 <!-- here i'll append links -->
             </div>
         `;
-
     }
     connectedCallback() {
         //dipslay the logo
@@ -72,9 +99,36 @@ class myNavBar extends HTMLElement {
 
         //display the menu icon
         const menu = this.getAttribute('menu');
-        this.shadowRoot.querySelector('img.menu-bars').src = menu; 
+        const menuIcon = this.shadowRoot.querySelector('img.menu-bars');
+        menuIcon.src = menu; 
+        
+        //assign links for the mobile version
+        const slot = this.shadowRoot.querySelector('slot');
+        const mobileLinksContainner = this.shadowRoot.querySelector('.links-mobile');
+        slot.addEventListener('slotchange', () => {
+            const slotContent = slot.assignedNodes();
+            for (let i=0; i<slotContent.length; i++) {
+                //select the elements not the white space
+                if (i%2 !== 0) {
+                    const a = document.createElement('a');
+                    a.textContent = slotContent[i].textContent;
+                    mobileLinksContainner.appendChild(a);
+                }
+            }
+        });
 
+        //show the links when the user click the menu btn
+        menuIcon.addEventListener('click', () => mobileLinksContainner.style.left = 0);
+
+        //display the close btn
+        const closeBtn = this.shadowRoot.querySelector('.close');
+        closeBtn.src = this.getAttribute('close');
+
+        //hide the links when the user click the close btn
+        closeBtn.addEventListener('click', () => mobileLinksContainner.style.left = '-100%');
     }
+
 }
 
 customElements.define('my-nav-bar', myNavBar);
+
